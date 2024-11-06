@@ -23,16 +23,32 @@ export class Item {
         return this.#title
     }
 
+    setTitle(title) {
+        this.#title = title;
+    }
+
     getDescription() {
         return this.#description;
+    }
+
+    setDescription(description) {
+        this.#description = description;
     }
 
     getDueDate() {
         return this.#dueDate;
     }
 
+    setDueDate(dueDate) {
+        this.#dueDate = dueDate;
+    }
+
     getPriority() {
         return this.#priority;
+    }
+
+    setPriority(priority) {
+        this.#priority = priority;
     }
 
     isCompleted() {

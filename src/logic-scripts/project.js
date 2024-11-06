@@ -35,5 +35,11 @@ export class Project {
         this.#list.push(new Item(title, description, dueDate, priority));
     }
 
+    removeItemFromList(item) {
+        const index = this.#list.findIndex((i) => i === item);
+        if(index > -1) {
+            this.#list.splice(index, 1);
+        }
+    }
 
 }

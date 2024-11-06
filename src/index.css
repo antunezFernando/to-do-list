@@ -59,3 +59,12 @@ main {
     align-items: flex-start;
     gap: 10px;
 }
+
+.list-item {
+    border: var(--def-border);
+    padding: 10px;
+}
+
+.edit-container {
+    
+}
