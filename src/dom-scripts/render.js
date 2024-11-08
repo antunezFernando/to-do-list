@@ -1,3 +1,5 @@
+import * as url from "../images/plus.png"
+
 const mainContainer = document.querySelector("#main-container");
 let projectsArray = null;
 
@@ -16,6 +18,15 @@ export function renderProjectCards() {
         const projectCard = getProjectCard(project)
         projectsContainer.appendChild(projectCard);
     }
+
+    const addProjectDiv = document.createElement("div");
+    addProjectDiv.classList.add("card");
+    addProjectDiv.classList.add("add");
+    const img = document.createElement("img");
+    img.src = url.default;
+
+    addProjectDiv.appendChild(img);
+    projectsContainer.appendChild(addProjectDiv);
 
     mainContainer.appendChild(projectsContainer);
 }
@@ -58,12 +69,18 @@ function renderList(project) {
     backButton.addEventListener("click", () => {
         renderProjectCards();
     });
-
     div.appendChild(backButton);
+
+    const newItemButton = document.createElement("button");
+    newItemButton.innerText = "New Item";
+    newItemButton.addEventListener("click", () => {
+        renderCreateOrEditItem(project);
+    });
+
+    div.appendChild(newItemButton);
 
     for (let item of project.getList()) {
         const itemDiv = getListItem(item, project);
-
         div.appendChild(itemDiv);
     }
 
@@ -119,9 +136,17 @@ function getListItem(item, project) {
     const editButton = document.createElement("button");
     editButton.innerText = "Edit";
     editButton.addEventListener("click", () => {
-        renderEditItem(project, item);
+        renderCreateOrEditItem(project, item);
     });
     itemDiv.appendChild(editButton);
+
+    const toggleStatusButton = document.createElement("button");
+    toggleStatusButton.innerText = "Toggle status";
+    toggleStatusButton.addEventListener("click", () => {
+        item.setCompleted(!item.isCompleted())
+        renderList(project);
+    });
+    itemDiv.appendChild(toggleStatusButton);
 
     const deleteButton = document.createElement("button");
     deleteButton.innerText = "Delete";
@@ -134,18 +159,20 @@ function getListItem(item, project) {
     return itemDiv;
 }
 
-function renderEditItem(project, item) {
+function renderCreateOrEditItem(project, item = null) {
     mainContainer.innerHTML = "";
 
     const editDiv = document.createElement("div");
     editDiv.classList.add("edit-container");
-    editDiv.appendChild(getItemFormElement(project, item));
+    const itemElement = item === null ?
+        createOrEditItem(project) : createOrEditItem(project, item)
+    editDiv.appendChild(itemElement);
 
     mainContainer.appendChild(editDiv);
 }
 
-function getItemFormElement(project, item = null) {
-    const flag = item !== null ? true : false;
+function createOrEditItem(project, item = null) {
+    const isItemBeingEdited = item !== null ? true : false;
 
     const form = document.createElement("form");
 
@@ -160,7 +187,7 @@ function getItemFormElement(project, item = null) {
     const titleInput = document.createElement("input");
     titleInput.id = "titleInput";
     titleInput.setAttribute("name", "title");
-    if (flag) titleInput.value = item.getTitle();
+    if (isItemBeingEdited) titleInput.value = item.getTitle();
     titleDiv.appendChild(titleInput);
 
     form.appendChild(titleDiv);
@@ -176,7 +203,7 @@ function getItemFormElement(project, item = null) {
     const descriptionInput = document.createElement("input");
     descriptionInput.id = "descriptionInput";
     descriptionInput.setAttribute("name", "description");
-    if (flag) descriptionInput.value = item.getDescription();
+    if (isItemBeingEdited) descriptionInput.value = item.getDescription();
     descriptionDiv.appendChild(descriptionInput);
 
     form.appendChild(descriptionDiv);
@@ -192,7 +219,7 @@ function getItemFormElement(project, item = null) {
     const dueDateInput = document.createElement("input");
     dueDateInput.id = "dueDateInput";
     dueDateInput.setAttribute("name", "dueDate");
-    if (flag) dueDateInput.value = item.getDueDate();
+    if (isItemBeingEdited) dueDateInput.value = item.getDueDate();
     dueDateDiv.appendChild(dueDateInput);
 
     form.appendChild(dueDateDiv);
@@ -208,20 +235,25 @@ function getItemFormElement(project, item = null) {
     const priorityInput = document.createElement("input");
     priorityInput.id = "priorityInput";
     priorityInput.setAttribute("name", "priority");
-    if (flag) priorityInput.value = item.getPriority();
+    if (isItemBeingEdited) priorityInput.value = item.getPriority();
     priorityDiv.appendChild(priorityInput);
 
     form.appendChild(priorityDiv);
 
     const submitButton = document.createElement("button");
     submitButton.setAttribute("type", "submit");
-    submitButton.innerText = `${flag ? "Edit" : "Create"}`;
+    submitButton.innerText = `${isItemBeingEdited ? "Edit" : "Create"}`;
     submitButton.addEventListener("click", (e) => {
         e.preventDefault();
-        item.setTitle(titleInput.value);
-        item.setDescription(descriptionInput.value);
-        item.setPriority(priorityInput.value);
-        item.setDueDate(dueDateInput.value);
+        if (isItemBeingEdited) {
+            item.setTitle(titleInput.value);
+            item.setDescription(descriptionInput.value);
+            item.setPriority(priorityInput.value);
+            item.setDueDate(dueDateInput.value);
+        } else {
+            project.addItemToList(titleInput.value, descriptionInput.value,
+                priorityInput.value, dueDateInput.value);
+        }
         renderList(project);
     });
     form.appendChild(submitButton);

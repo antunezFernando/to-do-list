@@ -66,5 +66,16 @@ main {
 }
 
 .edit-container {
-    
+    border: var(--def-border);
+}
+
+.card.add {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+
+    & img {
+        height: 100%;
+    }
 }
