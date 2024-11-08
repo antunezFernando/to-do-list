@@ -2,24 +2,26 @@ import "./index.css"
 import { Project } from "./logic-scripts/project"
 import { renderProjectCards, setProjectsArray } from "./dom-scripts/render"
 
-const projects = [];
+/* const proj = new Project("Name")
+proj.addItemToList("asd", "asd", "2024-11-11", "Low")
 
-const def = new Project("Default");
-def.addItemToList("item1", "Lorem", "2024", "High")
-def.addItemToList("item2", "Lorem", "2025", "Critical")
-def.addItemToList("item3", "Lorem", "2026", "Low")
-def.getList()[0].setCompleted(true);
+const proj2 = new Project("Name2")
+proj.addItemToList("asd2", "asd2", "2024-11-11", "Low")
 
-const proj = new Project("Second");
-proj.addItemToList("item1", "Lorem", "2024", "Low")
-proj.addItemToList("item2", "Lorem", "2025", "Medium")
-proj.addItemToList("item3", "Lorem", "2026", "High")
-proj.addItemToList("item4", "Lorem", "2026", "Critical")
-proj.getList()[0].setCompleted(true);
-proj.getList()[2].setCompleted(true);
+const projects = [proj.getObject(), proj2.getObject()];
+const json = JSON.stringify(projects)
+ */
 
-projects.push(def);
-projects.push(proj);
+if(localStorage.getItem("projects") === null) {
+    const initialProjects = [];
+    const initialProjectObject = {
+        name: "Initial Project",
+        list: []
+    }
+    initialProjects.push(initialProjectObject);
+    localStorage.setItem("projects", JSON.stringify(initialProjects));
+}
+console.log(localStorage.getItem("projects"))
 
-setProjectsArray(projects);
+setProjectsArray(JSON.parse(localStorage.getItem("projects")));
 renderProjectCards();

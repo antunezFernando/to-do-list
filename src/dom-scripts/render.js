@@ -1,11 +1,23 @@
 import * as url from "../images/plus.png"
 import { Project } from "../logic-scripts/project";
+import { formatDistance } from "date-fns";
 
 const mainContainer = document.querySelector("#main-container");
 let projectsArray = null;
 
 export function setProjectsArray(array) {
-    projectsArray = array;
+    const newArray = [];
+    for (let elem of array) {
+        const project = new Project(elem.name);
+
+        for (let item of elem.list) {
+            project.addItemToList(item.title, item.description,
+                item.dueDate, item.priority, item.completed);
+        }
+
+        newArray.push(project);
+    }
+    projectsArray = newArray;
 }
 
 export function renderProjectCards() {
@@ -128,7 +140,7 @@ function getListItem(item, project) {
     dueDateDiv.classList.add("item-field");
 
     const dueDate = document.createElement("p");
-    dueDate.innerText = `Due Date: ${item.getDueDate()}`;
+    dueDate.innerText = `Due Date: ${item.getDueDate()} - ${formatDistance(item.getDueDate(), Date.now(), { addSuffix: true })}`;
     dueDateDiv.appendChild(dueDate);
 
     const priorityDiv = document.createElement("div");
@@ -162,7 +174,8 @@ function getListItem(item, project) {
     const toggleStatusButton = document.createElement("button");
     toggleStatusButton.innerText = "Toggle status";
     toggleStatusButton.addEventListener("click", () => {
-        item.setCompleted(!item.isCompleted())
+        item.setCompleted(!item.isCompleted());
+        saveToLocalStorage();
         renderList(project);
     });
     itemDiv.appendChild(toggleStatusButton);
@@ -171,6 +184,7 @@ function getListItem(item, project) {
     deleteButton.innerText = "Delete";
     deleteButton.addEventListener("click", () => {
         project.removeItemFromList(item);
+        saveToLocalStorage();
         renderList(project);
     });
     itemDiv.appendChild(deleteButton);
@@ -242,8 +256,9 @@ function createNewItem() {
     submitButton.addEventListener("click", (e) => {
         e.preventDefault();
         const project = getProjectFromName(projectInput.value);
-        project.addItemToList(titleInput.value, descriptionInput.value,
-            dueDateInput.value, priorityInput.value);
+        project.addItemToList(titleDiv.querySelector("input").value, descriptionDiv.querySelector("input").value,
+            dueDateDiv.querySelector("input").value, priorityDiv.querySelector("select").value);
+        saveToLocalStorage();
         renderList(project);
     });
     form.appendChild(submitButton);
@@ -291,7 +306,7 @@ function createOrEditItem(project, item = null) {
     form.appendChild(descriptionDiv);
 
     const dueDateDiv = isItemBeingEdited ?
-        getDueDateElement(teim) : getDueDateElement();
+        getDueDateElement(item) : getDueDateElement();
     form.appendChild(dueDateDiv);
 
     const priorityDiv = isItemBeingEdited ?
@@ -304,14 +319,15 @@ function createOrEditItem(project, item = null) {
     submitButton.addEventListener("click", (e) => {
         e.preventDefault();
         if (isItemBeingEdited) {
-            item.setTitle(titleInput.value);
-            item.setDescription(descriptionInput.value);
-            item.setPriority(priorityInput.value);
-            item.setDueDate(dueDateInput.value);
+            item.setTitle(titleDiv.querySelector("input").value);
+            item.setDescription(descriptionDiv.querySelector("input").value);
+            item.setDueDate(dueDateDiv.querySelector("input").value);
+            item.setPriority(priorityDiv.querySelector("select").value);
         } else {
-            project.addItemToList(titleInput.value, descriptionInput.value,
-                dueDateInput.value, priorityInput.value);
+            project.addItemToList(titleDiv.querySelector("input").value, descriptionDiv.querySelector("input").value,
+            dueDateDiv.querySelector("input").value, priorityDiv.querySelector("select").value);
         }
+        saveToLocalStorage();
         renderList(project);
     });
     form.appendChild(submitButton);
@@ -372,6 +388,7 @@ function createOrEditProject(project = null) {
         } else {
             projectsArray.push(new Project(nameInput.value));
         }
+        saveToLocalStorage();
         renderProjectCards();
     });
     form.appendChild(submitButton);
@@ -425,6 +442,7 @@ function getDueDateElement(item = null) {
     dueDateDiv.appendChild(dueDateLabel);
 
     const dueDateInput = document.createElement("input");
+    dueDateInput.setAttribute("type", "date");
     dueDateInput.id = "dueDateInput";
     dueDateInput.setAttribute("name", "dueDate");
     if (item !== null) dueDateInput.value = item.getDueDate();
@@ -447,22 +465,22 @@ function getPriorityElement(item = null) {
     priorityInput.setAttribute("name", "priority");
 
     const low = document.createElement("option");
-    low.value = "low";
+    low.value = "Low";
     low.innerText = "Low";
     priorityInput.appendChild(low);
 
     const medium = document.createElement("option");
-    medium.value = "medium";
+    medium.value = "Medium";
     medium.innerText = "Medium";
     priorityInput.appendChild(medium);
 
     const high = document.createElement("option");
-    high.value = "high";
+    high.value = "High";
     high.innerText = "High";
     priorityInput.appendChild(high);
 
     const critical = document.createElement("option");
-    critical.value = "critical";
+    critical.value = "Critical";
     critical.innerText = "Critical";
     priorityInput.appendChild(critical);
 
@@ -486,4 +504,14 @@ function getPriorityElement(item = null) {
     priorityDiv.appendChild(priorityInput);
 
     return priorityDiv;
+}
+
+function saveToLocalStorage() {
+    const objectsArray = [];
+
+    for (let project of projectsArray) {
+        objectsArray.push(project.getObject());
+    }
+
+    localStorage.setItem("projects", JSON.stringify(objectsArray));
 }

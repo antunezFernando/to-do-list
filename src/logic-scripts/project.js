@@ -31,14 +31,31 @@ export class Project {
         return this.#list.filter(item => !item.isCompleted()).length;
     }
 
-    addItemToList(title, description, dueDate, priority) {
-        this.#list.push(new Item(title, description, dueDate, priority));
+    addItemToList(title, description, dueDate, priority, completed = false) {
+        this.#list.push(new Item(title, description, dueDate, priority, completed));
     }
 
     removeItemFromList(item) {
         const index = this.#list.findIndex((i) => i === item);
         if(index > -1) {
             this.#list.splice(index, 1);
+        }
+    }
+
+    #getListAsObject() {
+        const ret = [];
+
+        for (let item of this.#list) {
+            ret.push(item.getObject());
+        }
+
+        return ret;
+    }
+
+    getObject() {
+        return {
+            name: this.getName(),
+            list: this.#getListAsObject()
         }
     }
 
